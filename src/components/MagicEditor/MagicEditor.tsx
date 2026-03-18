@@ -29,6 +29,8 @@ const EXTENSIONS = [
 
 export function MagicEditor({
   content = '',
+  inputType = 'html',
+  outputType = 'html',
   onChange,
   onBlur,
   onFocus,
@@ -39,6 +41,9 @@ export function MagicEditor({
   toolbarClassName,
   contentClassName,
 }: MagicEditorProps) {
+  const getOutput = (editor: ReturnType<typeof useEditor>) =>
+    outputType === 'json' ? editor!.getJSON() : editor!.getHTML()
+
   const editor = useEditor({
     extensions: [
       ...EXTENSIONS,
@@ -48,15 +53,21 @@ export function MagicEditor({
     editable,
     autofocus,
     onUpdate({ editor }) {
-      onChange?.(editor.getHTML(), editor.getJSON())
+      onChange?.(getOutput(editor))
     },
     onBlur({ editor }) {
-      onBlur?.(editor.getHTML(), editor.getJSON())
+      onBlur?.(getOutput(editor))
     },
     onFocus({ editor }) {
-      onFocus?.(editor.getHTML(), editor.getJSON())
+      onFocus?.(getOutput(editor))
     },
   })
+
+  // Emit current content when outputType changes so the consumer stays in sync
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return
+    onChange?.(outputType === 'json' ? editor.getJSON() : editor.getHTML())
+  }, [outputType]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sync editable prop after mount
   useEffect(() => {
@@ -67,8 +78,12 @@ export function MagicEditor({
   // Sync content prop when it changes from outside
   useEffect(() => {
     if (!editor || editor.isDestroyed) return
-    if (content !== editor.getHTML()) {
-      editor.commands.setContent(content, false)
+    const isDifferent =
+      inputType === 'json'
+        ? JSON.stringify(content) !== JSON.stringify(editor.getJSON())
+        : content !== editor.getHTML()
+    if (isDifferent) {
+      editor.commands.setContent(content as string, false)
     }
   }, [content]) // eslint-disable-line react-hooks/exhaustive-deps
 

@@ -20,20 +20,37 @@ export default function App() {
   return (
     <MagicEditor
       placeholder="Start writing..."
-      onChange={(html, json) => console.log(html, json)}
+      onChange={(value) => console.log(value)}
     />
   )
 }
 ```
 
-### Controlled mode
+### Controlled mode (HTML)
 
 ```tsx
 const [html, setHtml] = useState('')
 
 <MagicEditor
   content={html}
-  onChange={(nextHtml) => setHtml(nextHtml)}
+  onChange={(value) => setHtml(value as string)}
+/>
+```
+
+### Controlled mode (JSON)
+
+Use `inputType` and `outputType` to work with TipTap's JSON format instead of HTML strings:
+
+```tsx
+import type { JSONContent } from 'magic-text'
+
+const [doc, setDoc] = useState<JSONContent | null>(null)
+
+<MagicEditor
+  content={doc ?? undefined}
+  inputType="json"
+  outputType="json"
+  onChange={(value) => setDoc(value as JSONContent)}
 />
 ```
 
@@ -45,18 +62,36 @@ const [html, setHtml] = useState('')
 
 ## Props
 
-| Prop               | Type                                              | Default               | Description                                      |
-| ------------------ | ------------------------------------------------- | --------------------- | ------------------------------------------------ |
-| `content`          | `string`                                          | `''`                  | HTML content. Acts as controlled value when combined with `onChange`. |
-| `onChange`         | `(html: string, json: JSONContent) => void`       | —                     | Fired on every content change.                   |
-| `onBlur`           | `(html: string, json: JSONContent) => void`       | —                     | Fired when the editor loses focus.               |
-| `onFocus`          | `(html: string, json: JSONContent) => void`       | —                     | Fired when the editor gains focus.               |
-| `placeholder`      | `string`                                          | `'Write something...'`| Placeholder shown when the editor is empty.      |
-| `editable`         | `boolean`                                         | `true`                | Toggles edit mode. Hides toolbar when `false`.   |
-| `autofocus`        | `boolean \| 'start' \| 'end' \| 'all' \| number` | `false`               | Autofocus the editor on mount.                   |
-| `className`        | `string`                                          | —                     | Extra class for the root wrapper.                |
-| `toolbarClassName` | `string`                                          | —                     | Extra class for the toolbar.                     |
-| `contentClassName` | `string`                                          | —                     | Extra class for the content area.                |
+| Prop               | Type                                              | Default               | Description                                                                              |
+| ------------------ | ------------------------------------------------- | --------------------- | ---------------------------------------------------------------------------------------- |
+| `content`          | `string \| JSONContent`                           | `''`                  | Content to display. Pass an HTML string or a JSONContent object depending on `inputType`. |
+| `inputType`        | `'html' \| 'json'`                                | `'html'`              | Format of the `content` prop.                                                            |
+| `outputType`       | `'html' \| 'json'`                                | `'html'`              | Format emitted by `onChange`, `onBlur`, and `onFocus` callbacks.                         |
+| `onChange`         | `(value: string \| JSONContent) => void`          | —                     | Fired on every content change. Receives HTML string or JSONContent based on `outputType`.|
+| `onBlur`           | `(value: string \| JSONContent) => void`          | —                     | Fired when the editor loses focus.                                                       |
+| `onFocus`          | `(value: string \| JSONContent) => void`          | —                     | Fired when the editor gains focus.                                                       |
+| `placeholder`      | `string`                                          | `'Write something...'`| Placeholder shown when the editor is empty.                                              |
+| `editable`         | `boolean`                                         | `true`                | Toggles edit mode. Hides toolbar when `false`.                                           |
+| `autofocus`        | `boolean \| 'start' \| 'end' \| 'all' \| number` | `false`               | Autofocus the editor on mount.                                                           |
+| `className`        | `string`                                          | —                     | Extra class for the root wrapper.                                                        |
+| `toolbarClassName` | `string`                                          | —                     | Extra class for the toolbar.                                                             |
+| `contentClassName` | `string`                                          | —                     | Extra class for the content area.                                                        |
+
+### inputType / outputType
+
+These two props decouple the format used to **feed** the component from the format used to **read** it back:
+
+| `inputType` | `content` expects   |
+| ----------- | ------------------- |
+| `'html'`    | HTML string         |
+| `'json'`    | `JSONContent` object|
+
+| `outputType` | callbacks receive   |
+| ------------ | ------------------- |
+| `'html'`     | HTML string         |
+| `'json'`     | `JSONContent` object|
+
+When `outputType` changes at runtime the component immediately fires `onChange` with the current content in the new format so the consumer stays in sync.
 
 ## Toolbar features
 

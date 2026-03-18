@@ -53,6 +53,25 @@ describe('MagicEditor', () => {
     expect(() => render(<MagicEditor onFocus={onFocus} />)).not.toThrow()
   })
 
+  it('accepts inputType="html" without throwing', () => {
+    expect(() => render(<MagicEditor inputType="html" content="<p>hello</p>" />)).not.toThrow()
+  })
+
+  it('accepts inputType="json" without throwing', () => {
+    const json = { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'hello' }] }] }
+    expect(() => render(<MagicEditor inputType="json" content={json} />)).not.toThrow()
+  })
+
+  it('accepts outputType="html" without throwing', () => {
+    const onChange = vi.fn()
+    expect(() => render(<MagicEditor outputType="html" onChange={onChange} />)).not.toThrow()
+  })
+
+  it('accepts outputType="json" without throwing', () => {
+    const onChange = vi.fn()
+    expect(() => render(<MagicEditor outputType="json" onChange={onChange} />)).not.toThrow()
+  })
+
   it('renders undo and redo buttons in the toolbar', () => {
     render(<MagicEditor editable={true} />)
     expect(screen.getByTitle('Undo')).toBeInTheDocument()
