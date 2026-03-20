@@ -1,0 +1,179 @@
+/* ─── Root ─────────────────────────────────────────────────────────────────── */
+.magic-editor {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+  font-family: inherit;
+  color: #0f172a;
+}
+
+/* ─── Toolbar ───────────────────────────────────────────────────────────────── */
+.magic-editor__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 8px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+/* ─── Toolbar button ────────────────────────────────────────────────────────── */
+.magic-editor__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  cursor: pointer;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  line-height: 1;
+  transition: background 0.1s ease, color 0.1s ease;
+}
+
+.magic-editor__btn:hover:not(:disabled) {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.magic-editor__btn--active {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.magic-editor__btn--active:hover:not(:disabled) {
+  background: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.magic-editor__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ─── Toolbar divider ───────────────────────────────────────────────────────── */
+.magic-editor__divider {
+  width: 1px;
+  height: 22px;
+  background: #e2e8f0;
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+/* ─── Content area ──────────────────────────────────────────────────────────── */
+.magic-editor__content {
+  padding: 16px 20px;
+  min-height: 160px;
+}
+
+/* ─── ProseMirror ───────────────────────────────────────────────────────────── */
+.magic-editor .ProseMirror {
+  outline: none;
+  min-height: inherit;
+  caret-color: #2563eb;
+}
+
+.magic-editor .ProseMirror > * + * {
+  margin-top: 0.6em;
+}
+
+.magic-editor .ProseMirror p {
+  margin: 0;
+  line-height: 1.65;
+}
+
+.magic-editor .ProseMirror h1,
+.magic-editor .ProseMirror h2,
+.magic-editor .ProseMirror h3 {
+  line-height: 1.25;
+  font-weight: 700;
+  margin-top: 1.2em;
+  margin-bottom: 0.3em;
+}
+
+.magic-editor .ProseMirror h1 { font-size: 1.75em; }
+.magic-editor .ProseMirror h2 { font-size: 1.35em; }
+.magic-editor .ProseMirror h3 { font-size: 1.1em; }
+
+.magic-editor .ProseMirror ul,
+.magic-editor .ProseMirror ol {
+  padding-left: 1.4em;
+  margin: 0.5em 0;
+}
+
+.magic-editor .ProseMirror li > p {
+  margin: 0;
+}
+
+.magic-editor .ProseMirror blockquote {
+  border-left: 3px solid #94a3b8;
+  margin: 0.8em 0;
+  padding: 0.4em 1em;
+  color: #64748b;
+  font-style: italic;
+}
+
+.magic-editor .ProseMirror code {
+  background: #f1f5f9;
+  border-radius: 3px;
+  padding: 0.15em 0.35em;
+  font-size: 0.875em;
+  font-family: 'Fira Code', 'Cascadia Code', monospace;
+  color: #e11d48;
+}
+
+.magic-editor .ProseMirror pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  border-radius: 6px;
+  padding: 12px 16px;
+  overflow-x: auto;
+}
+
+.magic-editor .ProseMirror pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+  font-size: 0.875em;
+}
+
+.magic-editor .ProseMirror hr {
+  border: none;
+  border-top: 2px solid #e2e8f0;
+  margin: 1.2em 0;
+}
+
+.magic-editor .ProseMirror a {
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.magic-editor .ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  display: block;
+}
+
+/* ─── Placeholder ───────────────────────────────────────────────────────────── */
+.magic-editor .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: #94a3b8;
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
+/* ─── Selection ─────────────────────────────────────────────────────────────── */
+.magic-editor .ProseMirror ::selection {
+  background: #bfdbfe;
+}
