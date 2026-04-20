@@ -113,6 +113,10 @@ The toolbar picker also lets users create **custom variables** on the fly. Click
 | `contentClassName` | `string`                                          | —                     | Extra class for the content area.                                                        |
 | `variables`        | `Variable[]`                                      | —                     | Variables available in the toolbar picker. Omit to hide the picker entirely.             |
 | `onVariableAdd`    | `(variable: Variable) => void`                    | —                     | Called when the user adds a custom variable via the picker.                              |
+| `locale`           | `string`                                          | `'en'`                | BCP 47 locale string. Built-in: `'en'`, `'es'`. Register others with `registerLocale()`. Changing after mount has no effect — use `key={locale}` to force remount. |
+| `translations`     | `PartialTranslations`                             | —                     | Fine-grained string overrides applied on top of the resolved locale.                     |
+| `ttsCharacters`    | `TTSCharacter[]`                                  | —                     | Characters for the TTS voice-assignment toolbar button. Omit to hide the button.         |
+| `ttsInflections`   | `string[]`                                        | —                     | Global list of inflection options shown as a select. Omit to hide the inflection field.  |
 
 ### inputType / outputType
 
@@ -130,6 +134,149 @@ These two props decouple the format used to **feed** the component from the form
 
 When `outputType` changes at runtime the component immediately fires `onChange` with the current content in the new format so the consumer stays in sync.
 
+## TTS extension
+
+The TTS extension is an optional feature for audiobook and TTS workflows. It lets authors mark text ranges with a character, voice model, and inflection. The backend receives the data as HTML attributes for processing.
+
+### Setup
+
+Pass a list of characters to enable the microphone button in the toolbar:
+
+```tsx
+import type { TTSCharacter } from 'tiptap-magictext'
+
+const characters: TTSCharacter[] = [
+  { id: 'narrator', name: 'Narrator', voices: ['en-us-neutral-1', 'en-us-neutral-2'], color: '#6366f1' },
+  { id: 'alice',    name: 'Alice',    voices: ['en-us-female-1', 'en-us-female-3'],   color: '#10b981' },
+]
+
+const inflections = ['neutral', 'excited', 'sad', 'whispering', 'dramatic']
+
+<MagicTextEditor ttsCharacters={characters} ttsInflections={inflections} />
+```
+
+Omit the prop (or pass `undefined`) to hide the button entirely.
+
+### `TTSCharacter` type
+
+| Field    | Type       | Description                                                                  |
+| -------- | ---------- | ---------------------------------------------------------------------------- |
+| `id`     | `string`   | Unique identifier written to `data-character-id` in the output HTML.         |
+| `name`   | `string`   | Display name shown in the editor popover and as the badge above marked text. |
+| `voices` | `string[]` | Available TTS voice/model options. Rendered as a select when a character is selected. Omit to hide the voice field for that character. |
+| `color`  | `string`   | Hex color for the editor highlight. Auto-assigned from a palette if omitted. |
+
+### Usage
+
+There are three ways to open the TTS popover:
+
+| Trigger | How |
+| ------- | --- |
+| **Hover** | Select text, then hover over the selection for ~600 ms. The popover appears anchored to the selected text automatically. |
+| **Toolbar button** | Click the microphone button in the toolbar at any time. |
+| **Click existing mark** | Click any TTS-marked span in the editor to edit it. |
+
+Once the popover is open:
+
+1. Choose a character from the grid (or type a custom name).
+2. If the character has `voices`, pick one from the dropdown. When no character is selected, all voices from all characters are shown.
+3. If `ttsInflections` was provided, pick an inflection.
+4. Click **Apply**.
+
+The **Remove** button appears when the cursor is inside an existing TTS mark and strips the mark from the range.
+
+### Output HTML
+
+Each marked range is wrapped in a `<span>` with `data-*` attributes:
+
+```html
+<span
+  data-type="tts"
+  data-character-id="alice"
+  data-character-name="Alice"
+  data-voice="en-us-female-1"
+  data-inflection="excited"
+>Curiouser and curiouser!</span>
+```
+
+All four attributes are optional — only the ones with non-empty values are emitted.
+
+### Advanced: standalone extension
+
+`TTSMarkExtension` is exported as a standalone TipTap extension for cases where you build a custom editor with `useEditor` directly:
+
+```ts
+import { TTSMarkExtension } from 'tiptap-magictext'
+
+const editor = useEditor({
+  extensions: [StarterKit, TTSMarkExtension, /* … */],
+})
+```
+
+## Internationalisation
+
+The editor UI ships in **English** (default) and **Spanish**. Pass `locale` to switch:
+
+```tsx
+<MagicTextEditor locale="es" />
+```
+
+### Override specific strings
+
+Use `translations` to replace individual strings without creating a full locale:
+
+```tsx
+<MagicTextEditor
+  locale="es"
+  translations={{ link: { applyButton: 'Confirmar' } }}
+/>
+```
+
+Any key not provided falls back to the resolved locale value. Groups are merged shallowly, so you only need to supply the keys you want to change.
+
+### Register a community locale
+
+Call `registerLocale` once at app startup (before rendering any editor):
+
+```tsx
+import { registerLocale } from 'tiptap-magictext'
+import type { Translations } from 'tiptap-magictext'
+
+const fr: Translations = {
+  toolbar: { ariaLabel: 'Mise en forme' },
+  history: { undo: 'Annuler', redo: 'Rétablir' },
+  // ... all keys required (see Translations type)
+}
+
+registerLocale('fr', fr)
+```
+
+Then use it as any other locale:
+
+```tsx
+<MagicTextEditor locale="fr" />
+```
+
+If the locale is not found in the registry the editor falls back to English gracefully.
+
+### Switching locale at runtime
+
+TipTap initialises extensions once. To switch locale after mount, remount the editor with a `key`:
+
+```tsx
+<MagicTextEditor key={locale} locale={locale} />
+```
+
+### Translations type
+
+The `Translations` interface is fully typed and exported. Use it when writing a new locale to get autocomplete and ensure no key is missing:
+
+```ts
+import type { Translations } from 'tiptap-magictext'
+
+export const de: Translations = { ... }
+```
+
 ## Exported API
 
 ```ts
@@ -137,10 +284,19 @@ When `outputType` changes at runtime the component immediately fires `onChange` 
 import { MagicTextEditor } from 'tiptap-magictext'
 
 // Types
-import type { MagicTextEditorProps, Variable, VariableType, JSONContent, ContentType } from 'tiptap-magictext'
+import type { MagicTextEditorProps, Variable, VariableType, JSONContent, ContentType, Translations, PartialTranslations, TTSCharacter } from 'tiptap-magictext'
+
+// i18n utilities
+import { registerLocale, resolveTranslations, useTranslations } from 'tiptap-magictext'
+
+// Built-in locale objects (useful as a base for partial overrides)
+import { en, es } from 'tiptap-magictext'
 
 // Toolbar sub-components (advanced usage)
-import { Toolbar, ToolbarButton, ToolbarDivider, VariableDropdown, LinkPopover, ImagePopover } from 'tiptap-magictext'
+import { Toolbar, ToolbarButton, ToolbarDivider, VariableDropdown, TTSPopover } from 'tiptap-magictext'
+
+// Standalone TipTap extension
+import { TTSMarkExtension } from 'tiptap-magictext'
 ```
 
 ## Toolbar features
@@ -155,6 +311,7 @@ import { Toolbar, ToolbarButton, ToolbarDivider, VariableDropdown, LinkPopover, 
 | Alignment   | Left, Center, Right                                  |
 | Insert      | Link (popover with text + URL), Image (URL or file upload) |
 | Variables   | Variable picker (when `variables` prop is set)       |
+| TTS         | Voice/character assignment (when `ttsCharacters` prop is set)       |
 
 ### Link popover
 

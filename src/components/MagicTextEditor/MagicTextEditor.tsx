@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
@@ -13,21 +13,8 @@ import Color from '@tiptap/extension-color'
 import type { MagicTextEditorProps } from '../../types'
 import { Toolbar } from '../Toolbar'
 import { VariableExtension } from '../../extensions/VariableExtension'
-
-const EXTENSIONS = [
-  StarterKit,
-  VariableExtension,
-  Underline,
-  TextAlign.configure({ types: ['heading', 'paragraph'] }),
-  Highlight.configure({ multicolor: true }),
-  Link.configure({
-    openOnClick: false,
-    HTMLAttributes: { rel: 'noopener noreferrer', target: '_blank' },
-  }),
-  Image,
-  TextStyle,
-  Color,
-]
+import { TTSMarkExtension } from '../../extensions/TTSMarkExtension'
+import { TranslationsContext, resolveTranslations } from '../../i18n'
 
 export function MagicTextEditor({
   content = '',
@@ -44,13 +31,35 @@ export function MagicTextEditor({
   contentClassName,
   variables,
   onVariableAdd,
+  ttsCharacters,
+  ttsInflections,
+  locale,
+  translations: translationOverrides,
 }: MagicTextEditorProps) {
+  const t = useMemo(
+    () => resolveTranslations(locale, translationOverrides),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [locale],
+  )
+
   const getOutput = (editor: ReturnType<typeof useEditor>) =>
     outputType === 'json' ? editor!.getJSON() : editor!.getHTML()
 
   const editor = useEditor({
     extensions: [
-      ...EXTENSIONS,
+      StarterKit,
+      TTSMarkExtension,
+      VariableExtension.configure({ translations: t.variableNode }),
+      Underline,
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      Highlight.configure({ multicolor: true }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: { rel: 'noopener noreferrer', target: '_blank' },
+      }),
+      Image,
+      TextStyle,
+      Color,
       Placeholder.configure({ placeholder }),
     ],
     content,
@@ -92,12 +101,23 @@ export function MagicTextEditor({
   }, [content]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className={`magic-text-editor${className ? ` ${className}` : ''}`}>
-      {editable && <Toolbar editor={editor} className={toolbarClassName} variables={variables} onVariableAdd={onVariableAdd} />}
-      <EditorContent
-        editor={editor}
-        className={`magic-text-editor__content${contentClassName ? ` ${contentClassName}` : ''}`}
-      />
-    </div>
+    <TranslationsContext.Provider value={t}>
+      <div className={`magic-text-editor${className ? ` ${className}` : ''}`}>
+        {editable && (
+          <Toolbar
+            editor={editor}
+            className={toolbarClassName}
+            variables={variables}
+            onVariableAdd={onVariableAdd}
+            ttsCharacters={ttsCharacters}
+            ttsInflections={ttsInflections}
+          />
+        )}
+        <EditorContent
+          editor={editor}
+          className={`magic-text-editor__content${contentClassName ? ` ${contentClassName}` : ''}`}
+        />
+      </div>
+    </TranslationsContext.Provider>
   )
 }

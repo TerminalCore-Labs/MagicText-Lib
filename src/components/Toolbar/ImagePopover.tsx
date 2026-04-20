@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import type { Editor } from '@tiptap/react'
 import { ImageIcon } from './icons'
+import { useTranslations } from '../../i18n'
 
 interface Props {
   editor: Editor
@@ -9,6 +10,8 @@ interface Props {
 type Tab = 'url' | 'upload'
 
 export function ImagePopover({ editor }: Props) {
+  const t = useTranslations()
+
   const [open, setOpen] = useState(false)
   const [tab, setTab] = useState<Tab>('url')
   const [src, setSrc] = useState('')
@@ -79,8 +82,8 @@ export function ImagePopover({ editor }: Props) {
           e.preventDefault()
           setOpen(o => !o)
         }}
-        title="Insert image"
-        aria-label="Insert image"
+        title={t.image.insertImage}
+        aria-label={t.image.insertImage}
         aria-pressed={open}
         aria-expanded={open}
         className={`magic-text-editor__btn${open ? ' magic-text-editor__btn--active' : ''}`}
@@ -89,21 +92,21 @@ export function ImagePopover({ editor }: Props) {
       </button>
 
       {open && (
-        <div className="magic-text-editor__var-dropdown magic-text-editor__image-popover" role="dialog" aria-label="Image inserter">
+        <div className="magic-text-editor__var-dropdown magic-text-editor__image-popover" role="dialog" aria-label={t.image.inserterAriaLabel}>
           <div className="magic-text-editor__image-tabs">
             <button
               type="button"
               className={`magic-text-editor__image-tab${tab === 'url' ? ' magic-text-editor__image-tab--active' : ''}`}
               onMouseDown={(e) => { e.preventDefault(); setTab('url') }}
             >
-              URL
+              {t.image.urlTab}
             </button>
             <button
               type="button"
               className={`magic-text-editor__image-tab${tab === 'upload' ? ' magic-text-editor__image-tab--active' : ''}`}
               onMouseDown={(e) => { e.preventDefault(); setTab('upload') }}
             >
-              Upload
+              {t.image.uploadTab}
             </button>
           </div>
 
@@ -111,11 +114,11 @@ export function ImagePopover({ editor }: Props) {
             <div className="magic-text-editor__link-body">
               <div className="magic-text-editor__link-fields">
                 <div className="magic-text-editor__link-field">
-                  <label className="magic-text-editor__link-label">Image URL</label>
+                  <label className="magic-text-editor__link-label">{t.image.imageUrlLabel}</label>
                   <input
                     ref={urlInputRef}
                     className="magic-text-editor__var-input"
-                    placeholder="https://…"
+                    placeholder={t.image.urlPlaceholder}
                     value={src}
                     onChange={e => setSrc(e.target.value)}
                     onKeyDown={e => {
@@ -125,10 +128,10 @@ export function ImagePopover({ editor }: Props) {
                   />
                 </div>
                 <div className="magic-text-editor__link-field">
-                  <label className="magic-text-editor__link-label">Alt text</label>
+                  <label className="magic-text-editor__link-label">{t.image.altTextLabel}</label>
                   <input
                     className="magic-text-editor__var-input"
-                    placeholder="Image description…"
+                    placeholder={t.image.altTextPlaceholder}
                     value={alt}
                     onChange={e => setAlt(e.target.value)}
                     onKeyDown={e => {
@@ -143,7 +146,7 @@ export function ImagePopover({ editor }: Props) {
                 className="magic-text-editor__var-add-btn"
                 onMouseDown={(e) => { e.preventDefault(); insert(src) }}
               >
-                Insert
+                {t.image.insertButton}
               </button>
             </div>
           ) : (
@@ -158,7 +161,7 @@ export function ImagePopover({ editor }: Props) {
                   <img src={preview} alt="preview" className="magic-text-editor__image-preview" />
                 ) : (
                   <span className="magic-text-editor__image-dropzone-hint">
-                    Click or drag an image here
+                    {t.image.dropzoneHint}
                   </span>
                 )}
                 <input
@@ -178,7 +181,7 @@ export function ImagePopover({ editor }: Props) {
                 disabled={!preview}
                 onMouseDown={(e) => { e.preventDefault(); if (preview) insert(preview) }}
               >
-                Insert
+                {t.image.insertButton}
               </button>
             </div>
           )}

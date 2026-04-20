@@ -1,10 +1,11 @@
 import type { Editor } from '@tiptap/react'
-import type { Variable } from '../../types'
+import type { Variable, TTSCharacter } from '../../types'
 import { ToolbarButton } from './ToolbarButton'
 import { ToolbarDivider } from './ToolbarDivider'
 import { VariableDropdown } from './VariableDropdown'
 import { LinkPopover } from './LinkPopover'
 import { ImagePopover } from './ImagePopover'
+import { TTSPopover } from './TTSPopover'
 import {
   BoldIcon, ItalicIcon, UnderlineIcon, StrikeIcon,
   UndoIcon, RedoIcon,
@@ -12,33 +13,37 @@ import {
   CodeIcon, HighlightIcon, HorizontalRuleIcon,
   AlignLeftIcon, AlignCenterIcon, AlignRightIcon,
 } from './icons'
+import { useTranslations } from '../../i18n'
 
 interface ToolbarProps {
   editor: Editor | null
   className?: string
   variables?: Variable[]
   onVariableAdd?: (variable: Variable) => void
+  ttsCharacters?: TTSCharacter[]
+  ttsInflections?: string[]
 }
 
-export function Toolbar({ editor, className, variables, onVariableAdd }: ToolbarProps) {
+export function Toolbar({ editor, className, variables, onVariableAdd, ttsCharacters, ttsInflections }: ToolbarProps) {
   if (!editor) return null
+  const t = useTranslations()
 
   return (
     <div
       role="toolbar"
-      aria-label="Text formatting"
+      aria-label={t.toolbar.ariaLabel}
       className={`magic-text-editor__toolbar${className ? ` ${className}` : ''}`}
     >
       {/* History */}
       <ToolbarButton
-        title="Undo"
+        title={t.history.undo}
         onClick={() => editor.chain().focus().undo().run()}
         disabled={!editor.can().undo()}
       >
         <UndoIcon />
       </ToolbarButton>
       <ToolbarButton
-        title="Redo"
+        title={t.history.redo}
         onClick={() => editor.chain().focus().redo().run()}
         disabled={!editor.can().redo()}
       >
@@ -49,35 +54,35 @@ export function Toolbar({ editor, className, variables, onVariableAdd }: Toolbar
 
       {/* Inline formatting */}
       <ToolbarButton
-        title="Bold"
+        title={t.formatting.bold}
         active={editor.isActive('bold')}
         onClick={() => editor.chain().focus().toggleBold().run()}
       >
         <BoldIcon />
       </ToolbarButton>
       <ToolbarButton
-        title="Italic"
+        title={t.formatting.italic}
         active={editor.isActive('italic')}
         onClick={() => editor.chain().focus().toggleItalic().run()}
       >
         <ItalicIcon />
       </ToolbarButton>
       <ToolbarButton
-        title="Underline"
+        title={t.formatting.underline}
         active={editor.isActive('underline')}
         onClick={() => editor.chain().focus().toggleUnderline().run()}
       >
         <UnderlineIcon />
       </ToolbarButton>
       <ToolbarButton
-        title="Strikethrough"
+        title={t.formatting.strikethrough}
         active={editor.isActive('strike')}
         onClick={() => editor.chain().focus().toggleStrike().run()}
       >
         <StrikeIcon />
       </ToolbarButton>
       <ToolbarButton
-        title="Highlight"
+        title={t.formatting.highlight}
         active={editor.isActive('highlight')}
         onClick={() => editor.chain().focus().toggleHighlight().run()}
       >
@@ -88,21 +93,21 @@ export function Toolbar({ editor, className, variables, onVariableAdd }: Toolbar
 
       {/* Headings */}
       <ToolbarButton
-        title="Heading 1"
+        title={t.headings.heading1}
         active={editor.isActive('heading', { level: 1 })}
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
       >
         H1
       </ToolbarButton>
       <ToolbarButton
-        title="Heading 2"
+        title={t.headings.heading2}
         active={editor.isActive('heading', { level: 2 })}
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
       >
         H2
       </ToolbarButton>
       <ToolbarButton
-        title="Heading 3"
+        title={t.headings.heading3}
         active={editor.isActive('heading', { level: 3 })}
         onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
       >
@@ -113,35 +118,35 @@ export function Toolbar({ editor, className, variables, onVariableAdd }: Toolbar
 
       {/* Lists & blocks */}
       <ToolbarButton
-        title="Bullet list"
+        title={t.blocks.bulletList}
         active={editor.isActive('bulletList')}
         onClick={() => editor.chain().focus().toggleBulletList().run()}
       >
         <BulletListIcon />
       </ToolbarButton>
       <ToolbarButton
-        title="Ordered list"
+        title={t.blocks.orderedList}
         active={editor.isActive('orderedList')}
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
       >
         <OrderedListIcon />
       </ToolbarButton>
       <ToolbarButton
-        title="Blockquote"
+        title={t.blocks.blockquote}
         active={editor.isActive('blockquote')}
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
       >
         <BlockquoteIcon />
       </ToolbarButton>
       <ToolbarButton
-        title="Code block"
+        title={t.blocks.codeBlock}
         active={editor.isActive('codeBlock')}
         onClick={() => editor.chain().focus().toggleCodeBlock().run()}
       >
         <CodeIcon />
       </ToolbarButton>
       <ToolbarButton
-        title="Horizontal rule"
+        title={t.blocks.horizontalRule}
         onClick={() => editor.chain().focus().setHorizontalRule().run()}
       >
         <HorizontalRuleIcon />
@@ -151,21 +156,21 @@ export function Toolbar({ editor, className, variables, onVariableAdd }: Toolbar
 
       {/* Alignment */}
       <ToolbarButton
-        title="Align left"
+        title={t.alignment.alignLeft}
         active={editor.isActive({ textAlign: 'left' })}
         onClick={() => editor.chain().focus().setTextAlign('left').run()}
       >
         <AlignLeftIcon />
       </ToolbarButton>
       <ToolbarButton
-        title="Align center"
+        title={t.alignment.alignCenter}
         active={editor.isActive({ textAlign: 'center' })}
         onClick={() => editor.chain().focus().setTextAlign('center').run()}
       >
         <AlignCenterIcon />
       </ToolbarButton>
       <ToolbarButton
-        title="Align right"
+        title={t.alignment.alignRight}
         active={editor.isActive({ textAlign: 'right' })}
         onClick={() => editor.chain().focus().setTextAlign('right').run()}
       >
@@ -182,6 +187,13 @@ export function Toolbar({ editor, className, variables, onVariableAdd }: Toolbar
         <>
           <ToolbarDivider />
           <VariableDropdown editor={editor} variables={variables} onVariableAdd={onVariableAdd} />
+        </>
+      )}
+
+      {ttsCharacters !== undefined && (
+        <>
+          <ToolbarDivider />
+          <TTSPopover editor={editor} characters={ttsCharacters} inflections={ttsInflections} />
         </>
       )}
     </div>

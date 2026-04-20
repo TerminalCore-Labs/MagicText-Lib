@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import { MagicTextEditor } from './MagicTextEditor'
-import type { Variable } from '../../types'
+import type { Variable, TTSCharacter } from '../../types'
 
 describe('MagicTextEditor', () => {
   // ─── Root & layout ──────────────────────────────────────────────────────────
@@ -133,5 +133,88 @@ describe('MagicTextEditor', () => {
   it('accepts an onVariableAdd callback without throwing', () => {
     const onVariableAdd = vi.fn()
     expect(() => render(<MagicTextEditor variables={[]} onVariableAdd={onVariableAdd} />)).not.toThrow()
+  })
+
+  // ─── TTS extension ──────────────────────────────────────────────────────────
+
+  it('renders the TTS button when ttsCharacters prop is provided', () => {
+    const characters: TTSCharacter[] = [{ id: 'narrator', name: 'Narrator' }]
+    render(<MagicTextEditor ttsCharacters={characters} />)
+    expect(screen.getByTitle('Assign voice')).toBeInTheDocument()
+  })
+
+  it('does not render the TTS button when ttsCharacters prop is omitted', () => {
+    render(<MagicTextEditor />)
+    expect(screen.queryByTitle('Assign voice')).not.toBeInTheDocument()
+  })
+
+  it('renders the TTS button with Spanish title when locale="es"', () => {
+    const characters: TTSCharacter[] = [{ id: 'narrator', name: 'Narrator' }]
+    render(<MagicTextEditor locale="es" ttsCharacters={characters} />)
+    expect(screen.getByTitle('Asignar voz')).toBeInTheDocument()
+  })
+
+  it('accepts ttsCharacters with voices and color without throwing', () => {
+    const characters: TTSCharacter[] = [
+      { id: 'alice', name: 'Alice', voices: ['en-us-female-1', 'en-us-female-3'], color: '#10b981' },
+    ]
+    expect(() => render(<MagicTextEditor ttsCharacters={characters} />)).not.toThrow()
+  })
+
+  it('accepts ttsInflections without throwing', () => {
+    const characters: TTSCharacter[] = [{ id: 'narrator', name: 'Narrator' }]
+    expect(() =>
+      render(<MagicTextEditor ttsCharacters={characters} ttsInflections={['neutral', 'excited']} />)
+    ).not.toThrow()
+  })
+
+  // ─── Internationalisation ────────────────────────────────────────────────────
+
+  it('renders English UI by default', () => {
+    render(<MagicTextEditor />)
+    expect(screen.getByTitle('Undo')).toBeInTheDocument()
+    expect(screen.getByTitle('Bold')).toBeInTheDocument()
+  })
+
+  it('renders Spanish UI when locale="es"', () => {
+    render(<MagicTextEditor locale="es" />)
+    expect(screen.getByTitle('Deshacer')).toBeInTheDocument()
+    expect(screen.getByTitle('Negrita')).toBeInTheDocument()
+    expect(screen.getByTitle('Encabezado 1')).toBeInTheDocument()
+  })
+
+  it('renders Spanish link and image buttons when locale="es"', () => {
+    render(<MagicTextEditor locale="es" />)
+    expect(screen.getByTitle('Insertar enlace')).toBeInTheDocument()
+    expect(screen.getByTitle('Insertar imagen')).toBeInTheDocument()
+  })
+
+  it('renders Spanish variable button when locale="es" and variables are provided', () => {
+    render(<MagicTextEditor locale="es" variables={[{ label: 'Nombre' }]} />)
+    expect(screen.getByTitle('Insertar variable')).toBeInTheDocument()
+  })
+
+  it('applies a translations override on top of the default locale', () => {
+    render(<MagicTextEditor translations={{ history: { undo: 'Go back', redo: 'Go forward' } }} />)
+    expect(screen.getByTitle('Go back')).toBeInTheDocument()
+    expect(screen.getByTitle('Go forward')).toBeInTheDocument()
+  })
+
+  it('applies a translations override on top of a non-default locale', () => {
+    render(<MagicTextEditor locale="es" translations={{ history: { undo: 'Atrás', redo: 'Adelante' } }} />)
+    expect(screen.getByTitle('Atrás')).toBeInTheDocument()
+    // Keys not overridden still use the locale value
+    expect(screen.getByTitle('Negrita')).toBeInTheDocument()
+  })
+
+  it('falls back to English for an unknown locale', () => {
+    render(<MagicTextEditor locale="zz-unknown" />)
+    expect(screen.getByTitle('Undo')).toBeInTheDocument()
+  })
+
+  it('renders the toolbar aria-label in Spanish when locale="es"', () => {
+    const { container } = render(<MagicTextEditor locale="es" />)
+    const toolbar = container.querySelector('[role="toolbar"]')
+    expect(toolbar).toHaveAttribute('aria-label', 'Formato de texto')
   })
 })

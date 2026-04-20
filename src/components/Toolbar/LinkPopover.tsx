@@ -1,12 +1,15 @@
 import { useState, useRef, useEffect } from 'react'
 import type { Editor } from '@tiptap/react'
 import { LinkIcon } from './icons'
+import { useTranslations } from '../../i18n'
 
 interface Props {
   editor: Editor
 }
 
 export function LinkPopover({ editor }: Props) {
+  const t = useTranslations()
+
   const [open, setOpen] = useState(false)
   const [text, setText] = useState('')
   const [url, setUrl] = useState('')
@@ -97,8 +100,8 @@ export function LinkPopover({ editor }: Props) {
             if (open) { setOpen(false); return }
             openPopover()
           }}
-          title="Insert link"
-          aria-label="Insert link"
+          title={t.link.insertLink}
+          aria-label={t.link.insertLink}
           aria-pressed={open}
           className={`magic-text-editor__btn${isActive || open ? ' magic-text-editor__btn--active' : ''}`}
         >
@@ -112,26 +115,26 @@ export function LinkPopover({ editor }: Props) {
           className="magic-text-editor__link-float"
           style={{ top: position.top, left: position.left }}
           role="dialog"
-          aria-label="Link editor"
+          aria-label={t.link.editorAriaLabel}
         >
           <div className="magic-text-editor__link-body">
             <div className="magic-text-editor__link-fields">
               <div className="magic-text-editor__link-field">
-                <label className="magic-text-editor__link-label">Text</label>
+                <label className="magic-text-editor__link-label">{t.link.textLabel}</label>
                 <input
                   ref={textInputRef}
                   className="magic-text-editor__var-input"
-                  placeholder="Link text…"
+                  placeholder={t.link.textPlaceholder}
                   value={text}
                   onChange={e => setText(e.target.value)}
                   onKeyDown={handleKeyDown}
                 />
               </div>
               <div className="magic-text-editor__link-field">
-                <label className="magic-text-editor__link-label">URL</label>
+                <label className="magic-text-editor__link-label">{t.link.urlLabel}</label>
                 <input
                   className="magic-text-editor__var-input"
-                  placeholder="https://…"
+                  placeholder={t.link.urlPlaceholder}
                   value={url}
                   onChange={e => setUrl(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -143,7 +146,7 @@ export function LinkPopover({ editor }: Props) {
               className="magic-text-editor__var-add-btn"
               onMouseDown={(e) => { e.preventDefault(); apply() }}
             >
-              Apply
+              {t.link.applyButton}
             </button>
           </div>
           {isActive && (
@@ -152,7 +155,7 @@ export function LinkPopover({ editor }: Props) {
               className="magic-text-editor__link-remove-btn"
               onMouseDown={(e) => { e.preventDefault(); remove() }}
             >
-              Remove link
+              {t.link.removeLinkButton}
             </button>
           )}
         </div>

@@ -1,6 +1,6 @@
 {
   "name": "tiptap-magictext",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Rich text editor component built with TipTap for React",
   "type": "module",
   "main": "dist/index.cjs",

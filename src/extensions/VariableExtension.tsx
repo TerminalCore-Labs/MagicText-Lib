@@ -2,6 +2,10 @@ import { Node, mergeAttributes } from '@tiptap/core'
 import { ReactNodeViewRenderer, NodeViewWrapper } from '@tiptap/react'
 import type { NodeViewProps } from '@tiptap/react'
 import { useState, useRef, useEffect } from 'react'
+import type { Translations } from '../i18n/types'
+import { en } from '../i18n/locales/en'
+
+type VariableNodeTranslations = Translations['variableNode']
 
 type DateRange = { from: string; to: string }
 
@@ -10,15 +14,17 @@ const parseRange = (val: string): DateRange => {
   catch { return { from: '', to: '' } }
 }
 
-const formatRangeDisplay = (val: string) => {
+const formatRangeDisplay = (val: string, t: VariableNodeTranslations) => {
   const { from, to } = parseRange(val)
   if (from && to) return `${from} → ${to}`
-  if (from) return `From ${from}`
-  if (to) return `To ${to}`
+  if (from) return `${t.fromLabel} ${from}`
+  if (to) return `${t.toLabel} ${to}`
   return ''
 }
 
-function VariableNodeView({ node, updateAttributes, editor }: NodeViewProps) {
+function VariableNodeView({ node, updateAttributes, editor, extension }: NodeViewProps) {
+  const t: VariableNodeTranslations = extension.options.translations ?? en.variableNode
+
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(node.attrs.value ?? '')
   const [draftFrom, setDraftFrom] = useState(() => parseRange(node.attrs.value ?? '').from)
@@ -93,8 +99,14 @@ function VariableNodeView({ node, updateAttributes, editor }: NodeViewProps) {
   ].filter(Boolean).join(' ')
 
   const displayValue = hasFill
-    ? (isDateRange ? formatRangeDisplay(node.attrs.value) : node.attrs.value)
+    ? (isDateRange ? formatRangeDisplay(node.attrs.value, t) : node.attrs.value)
     : '[' + node.attrs.label + ']'
+
+  const chipTitle = hasFill
+    ? t.variableTitle(node.attrs.label, displayValue)
+    : isEditable
+      ? t.clickToFill(node.attrs.label)
+      : node.attrs.label
 
   return (
     <NodeViewWrapper as="span" className="magic-text-editor__variable" contentEditable={false}>
@@ -127,7 +139,7 @@ function VariableNodeView({ node, updateAttributes, editor }: NodeViewProps) {
             }}
           >
             <label className="magic-text-editor__variable-daterange-field">
-              <span>From</span>
+              <span>{t.fromLabel}</span>
               <input
                 type="date"
                 className="magic-text-editor__variable-edit"
@@ -136,7 +148,7 @@ function VariableNodeView({ node, updateAttributes, editor }: NodeViewProps) {
               />
             </label>
             <label className="magic-text-editor__variable-daterange-field">
-              <span>To</span>
+              <span>{t.toLabel}</span>
               <input
                 type="date"
                 className="magic-text-editor__variable-edit"
@@ -190,7 +202,7 @@ function VariableNodeView({ node, updateAttributes, editor }: NodeViewProps) {
         <span
           className={chipClass}
           onClick={startEditing}
-          title={hasFill ? `${node.attrs.label}: ${displayValue}` : isEditable ? `Click to fill ${node.attrs.label}` : node.attrs.label}
+          title={chipTitle}
         >
           {displayValue}
         </span>
@@ -199,11 +211,17 @@ function VariableNodeView({ node, updateAttributes, editor }: NodeViewProps) {
   )
 }
 
-export const VariableExtension = Node.create({
+export const VariableExtension = Node.create<{ translations: VariableNodeTranslations }>({
   name: 'variable',
   group: 'inline',
   inline: true,
   atom: true,
+
+  addOptions() {
+    return {
+      translations: en.variableNode,
+    }
+  },
 
   addAttributes() {
     return {
