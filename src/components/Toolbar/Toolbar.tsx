@@ -1,5 +1,5 @@
 import type { Editor } from '@tiptap/react'
-import type { Variable, TTSCharacter } from '../../types'
+import type { Variable, TTSMark } from '../../types'
 import { ToolbarButton } from './ToolbarButton'
 import { ToolbarDivider } from './ToolbarDivider'
 import { VariableDropdown } from './VariableDropdown'
@@ -20,11 +20,11 @@ interface ToolbarProps {
   className?: string
   variables?: Variable[]
   onVariableAdd?: (variable: Variable) => void
-  ttsCharacters?: TTSCharacter[]
+  ttsMarks?: TTSMark[]
   ttsInflections?: string[]
 }
 
-export function Toolbar({ editor, className, variables, onVariableAdd, ttsCharacters, ttsInflections }: ToolbarProps) {
+export function Toolbar({ editor, className, variables, onVariableAdd, ttsMarks, ttsInflections }: ToolbarProps) {
   if (!editor) return null
   const t = useTranslations()
 
@@ -190,10 +190,10 @@ export function Toolbar({ editor, className, variables, onVariableAdd, ttsCharac
         </>
       )}
 
-      {ttsCharacters !== undefined && (
+      {ttsMarks !== undefined && (
         <>
           <ToolbarDivider />
-          <TTSPopover editor={editor} characters={ttsCharacters} inflections={ttsInflections} />
+          <TTSPopover editor={editor} characters={ttsMarks} inflections={ttsInflections} />
         </>
       )}
     </div>

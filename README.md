@@ -115,7 +115,7 @@ The toolbar picker also lets users create **custom variables** on the fly. Click
 | `onVariableAdd`    | `(variable: Variable) => void`                    | —                     | Called when the user adds a custom variable via the picker.                              |
 | `locale`           | `string`                                          | `'en'`                | BCP 47 locale string. Built-in: `'en'`, `'es'`. Register others with `registerLocale()`. Changing after mount has no effect — use `key={locale}` to force remount. |
 | `translations`     | `PartialTranslations`                             | —                     | Fine-grained string overrides applied on top of the resolved locale.                     |
-| `ttsCharacters`    | `TTSCharacter[]`                                  | —                     | Characters for the TTS voice-assignment toolbar button. Omit to hide the button.         |
+| `ttsMarks`    | `TTSMark[]`                                  | —                     | Mark presets shown in the TTS popover. Enables the microphone button. Omit to hide it.   |
 | `ttsInflections`   | `string[]`                                        | —                     | Global list of inflection options shown as a select. Omit to hide the inflection field.  |
 
 ### inputType / outputType
@@ -143,21 +143,21 @@ The TTS extension is an optional feature for audiobook and TTS workflows. It let
 Pass a list of characters to enable the microphone button in the toolbar:
 
 ```tsx
-import type { TTSCharacter } from 'tiptap-magictext'
+import type { TTSMark } from 'tiptap-magictext'
 
-const characters: TTSCharacter[] = [
+const marks: TTSMark[] = [
   { id: 'narrator', name: 'Narrator', voices: ['en-us-neutral-1', 'en-us-neutral-2'], color: '#6366f1' },
   { id: 'alice',    name: 'Alice',    voices: ['en-us-female-1', 'en-us-female-3'],   color: '#10b981' },
 ]
 
 const inflections = ['neutral', 'excited', 'sad', 'whispering', 'dramatic']
 
-<MagicTextEditor ttsCharacters={characters} ttsInflections={inflections} />
+<MagicTextEditor ttsMarks={marks} ttsInflections={inflections} />
 ```
 
 Omit the prop (or pass `undefined`) to hide the button entirely.
 
-### `TTSCharacter` type
+### `TTSMark` preset type
 
 | Field    | Type       | Description                                                                  |
 | -------- | ---------- | ---------------------------------------------------------------------------- |
@@ -309,7 +309,7 @@ export const de: Translations = { ... }
 import { MagicTextEditor } from 'tiptap-magictext'
 
 // Types
-import type { MagicTextEditorProps, Variable, VariableType, JSONContent, ContentType, Translations, PartialTranslations, TTSCharacter } from 'tiptap-magictext'
+import type { MagicTextEditorProps, Variable, VariableType, JSONContent, ContentType, Translations, PartialTranslations, TTSMark } from 'tiptap-magictext'
 
 // i18n utilities
 import { registerLocale, resolveTranslations, useTranslations } from 'tiptap-magictext'
@@ -336,7 +336,7 @@ import { TTSMarkExtension } from 'tiptap-magictext'
 | Alignment   | Left, Center, Right                                  |
 | Insert      | Link (popover with text + URL), Image (URL or file upload) |
 | Variables   | Variable picker (when `variables` prop is set)       |
-| TTS         | Voice/character assignment (when `ttsCharacters` prop is set)       |
+| TTS         | Voice/character assignment (when `ttsMarks` prop is set)       |
 
 ### Link popover
 

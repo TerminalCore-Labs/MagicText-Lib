@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
 import type { Editor } from '@tiptap/react'
-import type { TTSCharacter } from '../../types'
+import type { TTSMark } from '../../types'
 import { TTSIcon } from './icons'
 import { useTranslations } from '../../i18n'
 
 const PALETTE = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899']
 const HOVER_DELAY = 600
 
-function getCharacterColor(character: TTSCharacter, all: TTSCharacter[]): string {
+function getCharacterColor(character: TTSMark, all: TTSMark[]): string {
   if (character.color) return character.color
   const index = all.indexOf(character)
   return PALETTE[index % PALETTE.length]
@@ -24,7 +24,7 @@ function getSelectionPopoverPosition(): { top: number; left: number } | null {
 
 interface Props {
   editor: Editor
-  characters?: TTSCharacter[]
+  characters?: TTSMark[]
   inflections?: string[]
 }
 
@@ -165,7 +165,7 @@ export function TTSPopover({ editor, characters = [], inflections = [] }: Props)
 
   // ── Apply / Remove ────────────────────────────────────────────────────────────
 
-  const selectCharacter = (character: TTSCharacter) => {
+  const selectCharacter = (character: TTSMark) => {
     const color = getCharacterColor(character, characters)
     setCharacterId(character.id)
     setCharacterName(character.name)

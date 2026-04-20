@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { MagicTextEditor, registerLocale } from 'magic-text'
-import type { JSONContent, ContentType, Variable, Translations, TTSCharacter } from 'magic-text'
+import type { JSONContent, ContentType, Variable, Translations, TTSMark } from 'magic-text'
 import '../../src/styles/editor.css'
 
 // Example of a community-contributed locale (French)
@@ -22,7 +22,7 @@ registerLocale('fr', fr)
 
 const INITIAL_HTML = `<h2>Welcome to MagicText</h2><p>This is a <strong>rich text editor</strong> built with <em>TipTap</em>. Try editing the content!</p><ul><li>Bold, italic, underline</li><li>Headings and lists</li><li>Links and images</li></ul><p><span data-type="tts" data-character-id="narrator" data-character-name="Narrator" data-voice="en-us-neutral-1" data-color="#6366f1" style="--tts-color: #6366f1; --tts-bg: rgba(99,102,241,0.13);" class="magic-text-editor__tts">In the beginning, there was silence.</span> Then, from the depths of the forest, a voice rang out:</p><p><span data-type="tts" data-character-id="alice" data-character-name="Alice" data-voice="en-us-female-1" data-inflection="excited" data-color="#10b981" style="--tts-color: #10b981; --tts-bg: rgba(16,185,129,0.13);" class="magic-text-editor__tts">Curiouser and curiouser!</span></p>`
 
-const TTS_CHARACTERS: TTSCharacter[] = [
+const TTS_CHARACTERS: TTSMark[] = [
   { id: 'narrator', name: 'Narrator', voices: ['en-us-neutral-1', 'en-us-neutral-2'], color: '#6366f1' },
   { id: 'alice', name: 'Alice', voices: ['en-us-female-1', 'en-us-female-3'], color: '#10b981' },
   { id: 'cheshire', name: 'Cheshire Cat', voices: ['en-us-male-2', 'en-us-male-4'], color: '#f59e0b' },
@@ -111,7 +111,7 @@ export default function App() {
         editable={editable}
         variables={EXAMPLE_VARIABLES}
         onVariableAdd={(v) => console.log('[dev] variable added:', v)}
-        ttsCharacters={TTS_CHARACTERS}
+        ttsMarks={TTS_CHARACTERS}
         ttsInflections={TTS_INFLECTIONS}
       />
 

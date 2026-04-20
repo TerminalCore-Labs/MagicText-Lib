@@ -15,15 +15,14 @@ export interface Variable {
 }
 
 /**
- * A named character/speaker for the TTS extension.
- * Characters appear as quick-select buttons in the voice-assignment popover.
+ * Configuration for a single TTS mark preset shown in the voice-assignment popover.
  */
-export interface TTSCharacter {
-  /** Unique identifier used in the output data-character-id attribute. */
+export interface TTSMark {
+  /** Unique identifier written to data-character-id in the output HTML. */
   id: string
-  /** Display name shown in the editor UI and in the output data-character-name attribute. */
+  /** Display name shown in the popover grid and as the badge above marked text. */
   name: string
-  /** Available TTS voice/model options for this character. Rendered as a select in the popover. */
+  /** Available voice/model options for this mark. Rendered as a select in the popover. */
   voices?: string[]
   /** Hex color for the editor highlight. Auto-assigned from a built-in palette if omitted. */
   color?: string
@@ -59,13 +58,11 @@ export interface MagicTextEditorProps {
   /** Called when the user adds a custom variable via the picker. */
   onVariableAdd?: (variable: Variable) => void
   /**
-   * Characters available in the TTS voice-assignment toolbar button.
-   * When provided, the microphone button appears in the toolbar. Each selected
-   * text range can be tagged with a character, TTS voice, and inflection for
-   * the backend to process.
+   * Mark presets available in the TTS voice-assignment toolbar button.
+   * When provided, the microphone button appears in the toolbar.
    * Omit (or leave undefined) to hide the TTS button entirely.
    */
-  ttsCharacters?: TTSCharacter[]
+  ttsMarks?: TTSMark[]
   /**
    * Global list of inflection options shown as a select in the TTS popover.
    * Omit to hide the inflection field.

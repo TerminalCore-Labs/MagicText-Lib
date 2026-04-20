@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import { MagicTextEditor } from './MagicTextEditor'
-import type { Variable, TTSCharacter } from '../../types'
+import type { Variable, TTSMark } from '../../types'
 
 describe('MagicTextEditor', () => {
   // ─── Root & layout ──────────────────────────────────────────────────────────
@@ -137,34 +137,34 @@ describe('MagicTextEditor', () => {
 
   // ─── TTS extension ──────────────────────────────────────────────────────────
 
-  it('renders the TTS button when ttsCharacters prop is provided', () => {
-    const characters: TTSCharacter[] = [{ id: 'narrator', name: 'Narrator' }]
-    render(<MagicTextEditor ttsCharacters={characters} />)
+  it('renders the TTS button when ttsMarks prop is provided', () => {
+    const characters: TTSMark[] = [{ id: 'narrator', name: 'Narrator' }]
+    render(<MagicTextEditor ttsMarks={characters} />)
     expect(screen.getByTitle('Assign voice')).toBeInTheDocument()
   })
 
-  it('does not render the TTS button when ttsCharacters prop is omitted', () => {
+  it('does not render the TTS button when ttsMarks prop is omitted', () => {
     render(<MagicTextEditor />)
     expect(screen.queryByTitle('Assign voice')).not.toBeInTheDocument()
   })
 
   it('renders the TTS button with Spanish title when locale="es"', () => {
-    const characters: TTSCharacter[] = [{ id: 'narrator', name: 'Narrator' }]
-    render(<MagicTextEditor locale="es" ttsCharacters={characters} />)
+    const characters: TTSMark[] = [{ id: 'narrator', name: 'Narrator' }]
+    render(<MagicTextEditor locale="es" ttsMarks={characters} />)
     expect(screen.getByTitle('Asignar voz')).toBeInTheDocument()
   })
 
-  it('accepts ttsCharacters with voices and color without throwing', () => {
-    const characters: TTSCharacter[] = [
+  it('accepts ttsMarks with voices and color without throwing', () => {
+    const characters: TTSMark[] = [
       { id: 'alice', name: 'Alice', voices: ['en-us-female-1', 'en-us-female-3'], color: '#10b981' },
     ]
-    expect(() => render(<MagicTextEditor ttsCharacters={characters} />)).not.toThrow()
+    expect(() => render(<MagicTextEditor ttsMarks={characters} />)).not.toThrow()
   })
 
   it('accepts ttsInflections without throwing', () => {
-    const characters: TTSCharacter[] = [{ id: 'narrator', name: 'Narrator' }]
+    const characters: TTSMark[] = [{ id: 'narrator', name: 'Narrator' }]
     expect(() =>
-      render(<MagicTextEditor ttsCharacters={characters} ttsInflections={['neutral', 'excited']} />)
+      render(<MagicTextEditor ttsMarks={characters} ttsInflections={['neutral', 'excited']} />)
     ).not.toThrow()
   })
 

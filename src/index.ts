@@ -1,6 +1,6 @@
 export { MagicTextEditor } from './components/MagicTextEditor'
 export { Toolbar, ToolbarButton, ToolbarDivider, VariableDropdown, TTSPopover } from './components/Toolbar'
 export { TTSMarkExtension } from './extensions/TTSMarkExtension'
-export type { MagicTextEditorProps, JSONContent, ContentType, Variable, VariableType, Translations, PartialTranslations, TTSCharacter } from './types'
+export type { MagicTextEditorProps, JSONContent, ContentType, Variable, VariableType, Translations, PartialTranslations, TTSMark } from './types'
 export { registerLocale, resolveTranslations, useTranslations, en, es } from './i18n'
 import './styles/editor.css'
