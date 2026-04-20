@@ -170,20 +170,24 @@ Omit the prop (or pass `undefined`) to hide the button entirely.
 
 There are three ways to open the TTS popover:
 
-| Trigger | How |
-| ------- | --- |
-| **Hover** | Select text, then hover over the selection for ~600 ms. The popover appears anchored to the selected text automatically. |
-| **Toolbar button** | Click the microphone button in the toolbar at any time. |
-| **Click existing mark** | Click any TTS-marked span in the editor to edit it. |
+| Trigger | Requirement | How |
+| ------- | ----------- | --- |
+| **Hover** | Text must be selected first | Hover over the selection for ~600 ms — the popover appears anchored above the selected text. |
+| **Toolbar button** | — | Click the microphone button in the toolbar. |
+| **Click existing mark** | — | Click any TTS-marked span in the editor to edit its values. |
 
 Once the popover is open:
 
-1. Choose a character from the grid (or type a custom name).
-2. If the character has `voices`, pick one from the dropdown. When no character is selected, all voices from all characters are shown.
-3. If `ttsInflections` was provided, pick an inflection.
+1. Choose a character from the grid, or type a custom name directly.
+2. Pick a voice from the dropdown. When no character is selected the list shows all voices across all characters; selecting a character filters it to that character's own voices. Hidden if no voices are defined.
+3. Pick an inflection if `ttsInflections` was provided.
 4. Click **Apply**.
 
-The **Remove** button appears when the cursor is inside an existing TTS mark and strips the mark from the range.
+The **Remove** button appears when the cursor is inside an existing TTS mark and strips the mark from the selection.
+
+### Visual appearance
+
+Each marked span renders with a colored underline and a small superscript badge showing the character name. The highlight color comes from the character's `color` field (or the auto-assigned palette color).
 
 ### Output HTML
 
@@ -196,10 +200,31 @@ Each marked range is wrapped in a `<span>` with `data-*` attributes:
   data-character-name="Alice"
   data-voice="en-us-female-1"
   data-inflection="excited"
+  data-color="#10b981"
 >Curiouser and curiouser!</span>
 ```
 
-All four attributes are optional — only the ones with non-empty values are emitted.
+`data-character-id`, `data-character-name`, `data-voice`, and `data-inflection` are only emitted when non-empty. `data-color` is always emitted when a color is set — it is used to restore the visual highlight when the HTML is re-loaded into the editor. The backend can safely ignore it.
+
+### TTS CSS custom properties
+
+When a character color is set, the extension writes three inline CSS variables directly onto each `<span>`:
+
+| Variable | Default (no color set) | Description |
+| --- | --- | --- |
+| `--tts-color` | `#8b5cf6` | Underline and badge color |
+| `--tts-bg` | `rgba(139,92,246,0.13)` | Mark background (13 % opacity) |
+| `--tts-bg-hover` | `rgba(139,92,246,0.23)` | Mark background on hover (23 % opacity) |
+
+Because these are inline styles they override any CSS rule. The fallback values (shown above) apply only when no character color is set. To change the fallback, override the variables in your stylesheet:
+
+```css
+.magic-text-editor {
+  --tts-color: #0ea5e9;
+  --tts-bg: rgba(14, 165, 233, 0.13);
+  --tts-bg-hover: rgba(14, 165, 233, 0.23);
+}
+```
 
 ### Advanced: standalone extension
 
@@ -326,7 +351,12 @@ Clicking the image button opens a dropdown with two tabs:
 
 ## Styles
 
-Styles are injected automatically when the component is imported — no extra CSS import needed.
+Styles are bundled into the JavaScript package and injected into the page automatically when the component is first imported. No separate CSS import is required:
+
+```ts
+// This single import brings in both the component and its styles
+import { MagicTextEditor } from 'tiptap-magictext'
+```
 
 ### Tailwind / custom classes
 
