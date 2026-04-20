@@ -1,6 +1,6 @@
 {
   "name": "tiptap-magictext",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Rich text editor component built with TipTap for React",
   "type": "module",
   "main": "dist/index.cjs",
@@ -23,6 +23,7 @@
   "scripts": {
     "dev": "vite --config dev/vite.config.ts",
     "build": "vite build",
+    "prepublishOnly": "npm run typecheck && npm run build",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
