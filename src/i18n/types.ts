@@ -122,13 +122,17 @@ export interface Translations {
     insertTTS: string
     /** aria-label for the TTS popover dialog */
     popoverAriaLabel: string
-    characterLabel: string
-    characterPlaceholder: string
+    marksTab: string
+    assignTab: string
+    markLabel: string
+    markPlaceholder: string
     voiceLabel: string
     voiceSelectDefault: string
     inflectionLabel: string
     inflectionSelectDefault: string
     applyButton: string
+    playButton: string
+    stopButton: string
     removeButton: string
   }
 

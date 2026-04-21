@@ -59,7 +59,7 @@ describe('resolveTranslations', () => {
   it('returns Spanish tts labels for locale="es"', () => {
     const t = resolveTranslations('es')
     expect(t.tts.insertTTS).toBe('Asignar voz')
-    expect(t.tts.characterLabel).toBe('Personaje')
+    expect(t.tts.markLabel).toBe('Marca')
     expect(t.tts.voiceSelectDefault).toBe('Selecciona una voz…')
     expect(t.tts.inflectionSelectDefault).toBe('Selecciona una inflexión…')
     expect(t.tts.applyButton).toBe('Aplicar')
@@ -136,7 +136,7 @@ describe('resolveTranslations', () => {
       tts: { insertTTS: 'Asignar TTS' },
     })
     expect(t.tts.insertTTS).toBe('Asignar TTS')
-    expect(t.tts.characterLabel).toBe(es.tts.characterLabel)
+    expect(t.tts.markLabel).toBe(es.tts.markLabel)
   })
 })
 

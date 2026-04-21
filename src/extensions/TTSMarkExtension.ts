@@ -1,24 +1,12 @@
 import { Mark, mergeAttributes } from '@tiptap/core'
 
-function hexToRgba(hex: string, alpha: number): string {
-  const cleaned = hex.replace(/^#/, '')
-  const full = cleaned.length === 3
-    ? cleaned.split('').map(c => c + c).join('')
-    : cleaned
-  const r = parseInt(full.slice(0, 2), 16)
-  const g = parseInt(full.slice(2, 4), 16)
-  const b = parseInt(full.slice(4, 6), 16)
-  if (isNaN(r) || isNaN(g) || isNaN(b)) return `rgba(139, 92, 246, ${alpha})`
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`
-}
-
 /**
  * TipTap mark that tags a text range with TTS metadata.
  * The backend can read the data-* attributes to assign TTS models and inflections.
  *
  * Output HTML example:
  *   <span data-type="tts" data-character-id="alice" data-character-name="Alice"
- *         data-voice="en-us-female-1" data-inflection="excited">...</span>
+ *         data-voice="en-us-female-1" data-inflection="excited" data-color="#10b981">...</span>
  */
 export const TTSMarkExtension = Mark.create({
   name: 'tts',
@@ -48,10 +36,7 @@ export const TTSMarkExtension = Mark.create({
         parseHTML: el => el.getAttribute('data-inflection'),
         renderHTML: attrs => attrs.inflection ? { 'data-inflection': attrs.inflection } : {},
       },
-      /**
-       * Visual color for the editor UI. Stored in data-color so it round-trips
-       * through HTML. The backend can safely ignore this attribute.
-       */
+      /** Visual color chosen by the end user. Stored in data-color so it round-trips through HTML. */
       color: {
         default: null,
         parseHTML: el => el.getAttribute('data-color'),
@@ -66,17 +51,13 @@ export const TTSMarkExtension = Mark.create({
 
   renderHTML({ HTMLAttributes }) {
     const color = HTMLAttributes['data-color'] as string | undefined
-    const style = color
-      ? `--tts-color: ${color}; --tts-bg: ${hexToRgba(color, 0.13)}; --tts-bg-hover: ${hexToRgba(color, 0.23)};`
-      : undefined
-
     return [
       'span',
       mergeAttributes(
         {
           'data-type': 'tts',
           class: 'magic-text-editor__tts',
-          ...(style ? { style } : {}),
+          ...(color ? { style: `--tts-color: ${color};` } : {}),
         },
         HTMLAttributes,
       ),

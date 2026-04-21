@@ -150,6 +150,49 @@ export const TTSIcon = () => (
   </svg>
 )
 
+export const PlayIcon = () => (
+  <svg {...SVG_PROPS} aria-hidden="true">
+    <polygon points="5 3 19 12 5 21 5 3" fill="currentColor" stroke="none" />
+  </svg>
+)
+
+export const StopIcon = () => (
+  <svg {...SVG_PROPS} aria-hidden="true">
+    <rect x="3" y="3" width="18" height="18" rx="2" fill="currentColor" stroke="none" />
+  </svg>
+)
+
+export const CheckIcon = () => (
+  <svg {...SVG_PROPS} aria-hidden="true">
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+)
+
+export const TrashIcon = () => (
+  <svg {...SVG_PROPS} aria-hidden="true">
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+    <path d="M10 11v6" />
+    <path d="M14 11v6" />
+    <path d="M9 6V4h6v2" />
+  </svg>
+)
+
+export const SpeakerIcon = () => (
+  <svg {...SVG_PROPS} aria-hidden="true">
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+    <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+  </svg>
+)
+
+export const WavesIcon = () => (
+  <svg {...SVG_PROPS} aria-hidden="true">
+    <path d="M2 12c1.5-3 3-4.5 4.5-4.5S9 9 10.5 9 13.5 6 15 6s3 3 4.5 4.5S22 12 22 12" />
+    <path d="M2 19c1.5-3 3-4.5 4.5-4.5S9 16 10.5 16 13.5 13 15 13s3 3 4.5 4.5S22 19 22 19" />
+  </svg>
+)
+
 export const VariableIcon = () => (
   <svg {...SVG_PROPS} viewBox="0 0 44 24" width={29} height={16} aria-hidden="true">
     <path d="M5 3H2V21H5" />

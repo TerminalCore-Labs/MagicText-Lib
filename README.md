@@ -108,6 +108,7 @@ The toolbar picker also lets users create **custom variables** on the fly. Click
 | `placeholder`      | `string`                                          | `'Write something...'`| Placeholder shown when the editor is empty.                                              |
 | `editable`         | `boolean`                                         | `true`                | Toggles edit mode. Hides toolbar when `false`. Variables become non-interactive.         |
 | `autofocus`        | `boolean \| 'start' \| 'end' \| 'all' \| number` | `false`               | Autofocus the editor on mount.                                                           |
+| `style`            | `CSSProperties`                                   | —                     | Inline styles for the root wrapper. Useful for overriding CSS custom properties.         |
 | `className`        | `string`                                          | —                     | Extra class for the root wrapper.                                                        |
 | `toolbarClassName` | `string`                                          | —                     | Extra class for the toolbar.                                                             |
 | `contentClassName` | `string`                                          | —                     | Extra class for the content area.                                                        |
@@ -115,8 +116,11 @@ The toolbar picker also lets users create **custom variables** on the fly. Click
 | `onVariableAdd`    | `(variable: Variable) => void`                    | —                     | Called when the user adds a custom variable via the picker.                              |
 | `locale`           | `string`                                          | `'en'`                | BCP 47 locale string. Built-in: `'en'`, `'es'`. Register others with `registerLocale()`. Changing after mount has no effect — use `key={locale}` to force remount. |
 | `translations`     | `PartialTranslations`                             | —                     | Fine-grained string overrides applied on top of the resolved locale.                     |
-| `ttsMarks`    | `TTSMark[]`                                  | —                     | Mark presets shown in the TTS popover. Enables the microphone button. Omit to hide it.   |
+| `ttsMarks`         | `TTSMark[]`                                       | —                     | Mark presets shown in the TTS popover. Enables the microphone button. Omit to hide it.   |
 | `ttsInflections`   | `string[]`                                        | —                     | Global list of inflection options shown as a select. Omit to hide the inflection field.  |
+| `onTTSPlay`        | `(payload: TTSPlayPayload) => void`               | —                     | Called when the user clicks **Play** in the TTS popover. Enables the Play button. Omit to hide it. |
+| `onTTSStop`        | `() => void`                                      | —                     | Called when the user clicks **Stop** while audio is playing.                             |
+| `ttsPlaying`       | `boolean`                                         | `false`               | Controlled playing state. When `true`, the Play button switches to Stop.                 |
 
 ### inputType / outputType
 
@@ -136,18 +140,18 @@ When `outputType` changes at runtime the component immediately fires `onChange` 
 
 ## TTS extension
 
-The TTS extension is an optional feature for audiobook and TTS workflows. It lets authors mark text ranges with a character, voice model, and inflection. The backend receives the data as HTML attributes for processing.
+The TTS extension is an optional feature for audiobook and TTS workflows. It lets authors mark text ranges with a voice, character, and inflection. The backend receives the data as HTML attributes for processing.
 
 ### Setup
 
-Pass a list of characters to enable the microphone button in the toolbar:
+Pass a list of mark presets to enable the microphone button in the toolbar:
 
 ```tsx
 import type { TTSMark } from 'tiptap-magictext'
 
 const marks: TTSMark[] = [
-  { id: 'narrator', name: 'Narrator', voices: ['en-us-neutral-1', 'en-us-neutral-2'], color: '#6366f1' },
-  { id: 'alice',    name: 'Alice',    voices: ['en-us-female-1', 'en-us-female-3'],   color: '#10b981' },
+  { id: 'narrator', name: 'Narrator', voices: ['en-us-neutral-1', 'en-us-neutral-2'] },
+  { id: 'alice',    name: 'Alice',    voices: ['en-us-female-1', 'en-us-female-3'] },
 ]
 
 const inflections = ['neutral', 'excited', 'sad', 'whispering', 'dramatic']
@@ -162,9 +166,8 @@ Omit the prop (or pass `undefined`) to hide the button entirely.
 | Field    | Type       | Description                                                                  |
 | -------- | ---------- | ---------------------------------------------------------------------------- |
 | `id`     | `string`   | Unique identifier written to `data-character-id` in the output HTML.         |
-| `name`   | `string`   | Display name shown in the editor popover and as the badge above marked text. |
-| `voices` | `string[]` | Available TTS voice/model options. Rendered as a select when a character is selected. Omit to hide the voice field for that character. |
-| `color`  | `string`   | Hex color for the editor highlight. Auto-assigned from a palette if omitted. |
+| `name`   | `string`   | Display name shown in the **Saved marks** tab and as the badge above marked text. |
+| `voices` | `string[]` | Available TTS voice/model options. Rendered as a select in the popover. Omit to hide the voice field. |
 
 ### Usage
 
@@ -172,22 +175,58 @@ There are three ways to open the TTS popover:
 
 | Trigger | Requirement | How |
 | ------- | ----------- | --- |
-| **Hover** | Text must be selected first | Hover over the selection for ~600 ms — the popover appears anchored above the selected text. |
+| **Hover icon** | Text must be selected | Hover over the selection — a floating TTS icon button appears above it. Click the icon to open the popover. Both the icon and the popover remain visible side by side. |
 | **Toolbar button** | — | Click the microphone button in the toolbar. |
 | **Click existing mark** | — | Click any TTS-marked span in the editor to edit its values. |
 
-Once the popover is open:
+The popover opens beside the hover icon. Its vertical alignment adapts to viewport position: it extends **downward** when the selection is in the upper half, and **upward** when in the lower half, so it never overflows the screen.
 
-1. Choose a character from the grid, or type a custom name directly.
-2. Pick a voice from the dropdown. When no character is selected the list shows all voices across all characters; selecting a character filters it to that character's own voices. Hidden if no voices are defined.
-3. Pick an inflection if `ttsInflections` was provided.
-4. Click **Apply**.
+The popover has two tabs:
+
+- **Assign** — type a mark name, pick a color, select a voice and inflection, then click **Apply**.
+- **Saved marks** — pick from the presets passed via `ttsMarks`. Selecting one pre-fills the Assign tab and switches to it automatically.
+
+The end user picks the color for each mark from within the popover. The color is stored in `data-color` and restored when the HTML is re-loaded into the editor.
 
 The **Remove** button appears when the cursor is inside an existing TTS mark and strips the mark from the selection.
 
+### Play / Stop
+
+When `onTTSPlay` is provided, a **Play** button appears in the Assign tab. Clicking it fires `onTTSPlay` with a `TTSPlayPayload` containing the selected text and the current voice assignment. The consumer is responsible for starting audio and setting `ttsPlaying={true}`.
+
+While `ttsPlaying` is `true` the button switches to **Stop**. Clicking it fires `onTTSStop`. When playback ends naturally, set `ttsPlaying` back to `false`.
+
+```tsx
+const [ttsPlaying, setTtsPlaying] = useState(false)
+
+<MagicTextEditor
+  ttsMarks={marks}
+  ttsPlaying={ttsPlaying}
+  onTTSPlay={(payload) => {
+    startAudio(payload)   // your audio engine
+    setTtsPlaying(true)
+  }}
+  onTTSStop={() => {
+    stopAudio()
+    setTtsPlaying(false)
+  }}
+/>
+```
+
+#### `TTSPlayPayload`
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `text` | `string` | Plain text of the current selection. |
+| `characterId` | `string` | Mark identifier (from `TTSMark.id` or auto-generated from the name). |
+| `characterName` | `string` | Mark display name. |
+| `voice` | `string \| null` | Selected voice/model, or `null` if none chosen. |
+| `inflection` | `string \| null` | Selected inflection, or `null` if none chosen. |
+| `color` | `string` | Hex color chosen by the user. |
+
 ### Visual appearance
 
-Each marked span renders with a colored underline and a small superscript badge showing the character name. The highlight color comes from the character's `color` field (or the auto-assigned palette color).
+Each marked span renders with a colored underline (`border-bottom`) and a small superscript badge showing the mark name. The color is chosen by the end user in the popover.
 
 ### Output HTML
 
@@ -204,25 +243,21 @@ Each marked range is wrapped in a `<span>` with `data-*` attributes:
 >Curiouser and curiouser!</span>
 ```
 
-`data-character-id`, `data-character-name`, `data-voice`, and `data-inflection` are only emitted when non-empty. `data-color` is always emitted when a color is set — it is used to restore the visual highlight when the HTML is re-loaded into the editor. The backend can safely ignore it.
+`data-character-id`, `data-character-name`, `data-voice`, and `data-inflection` are only emitted when non-empty. `data-color` stores the user-chosen color and is used to restore the visual underline when the HTML is re-loaded. The backend can safely ignore it.
 
-### TTS CSS custom properties
+### TTS CSS custom property
 
-When a character color is set, the extension writes three inline CSS variables directly onto each `<span>`:
+The extension writes one inline CSS variable onto each marked `<span>`:
 
 | Variable | Default (no color set) | Description |
 | --- | --- | --- |
 | `--tts-color` | `#8b5cf6` | Underline and badge color |
-| `--tts-bg` | `rgba(139,92,246,0.13)` | Mark background (13 % opacity) |
-| `--tts-bg-hover` | `rgba(139,92,246,0.23)` | Mark background on hover (23 % opacity) |
 
-Because these are inline styles they override any CSS rule. The fallback values (shown above) apply only when no character color is set. To change the fallback, override the variables in your stylesheet:
+Because this is an inline style it overrides any CSS rule. The fallback applies only when no color is stored. To change the fallback, override the variable in your stylesheet:
 
 ```css
 .magic-text-editor {
   --tts-color: #0ea5e9;
-  --tts-bg: rgba(14, 165, 233, 0.13);
-  --tts-bg-hover: rgba(14, 165, 233, 0.23);
 }
 ```
 
@@ -309,7 +344,7 @@ export const de: Translations = { ... }
 import { MagicTextEditor } from 'tiptap-magictext'
 
 // Types
-import type { MagicTextEditorProps, Variable, VariableType, JSONContent, ContentType, Translations, PartialTranslations, TTSMark } from 'tiptap-magictext'
+import type { MagicTextEditorProps, Variable, VariableType, JSONContent, ContentType, Translations, PartialTranslations, TTSMark, TTSPlayPayload } from 'tiptap-magictext'
 
 // i18n utilities
 import { registerLocale, resolveTranslations, useTranslations } from 'tiptap-magictext'
@@ -336,7 +371,7 @@ import { TTSMarkExtension } from 'tiptap-magictext'
 | Alignment   | Left, Center, Right                                  |
 | Insert      | Link (popover with text + URL), Image (URL or file upload) |
 | Variables   | Variable picker (when `variables` prop is set)       |
-| TTS         | Voice/character assignment (when `ttsMarks` prop is set)       |
+| TTS         | Voice/mark assignment (when `ttsMarks` prop is set)  |
 
 ### Link popover
 
@@ -358,6 +393,10 @@ Styles are bundled into the JavaScript package and injected into the page automa
 import { MagicTextEditor } from 'tiptap-magictext'
 ```
 
+### HTML elements
+
+The editor applies **no default styles** to HTML elements (`h1`–`h3`, `p`, `ul`, `ol`, `blockquote`, `code`, `pre`, `a`, `img`, `hr`). They render with the browser defaults and whatever your own stylesheet provides, giving you full control.
+
 ### Tailwind / custom classes
 
 All default rules are wrapped in `:where()`, so their specificity is **zero**. Any class you pass — including Tailwind utilities — always wins without needing `!important`.
@@ -378,36 +417,65 @@ Every visual token is exposed as a CSS variable scoped to `.magic-text-editor`. 
 .my-editor {
   --mte-bg: transparent;
   --mte-border-color: #d1d5db;
-  --mte-radius: 4px;
+  --mte-radius: 6px;
   --mte-toolbar-bg: #f9fafb;
-  --mte-btn-active-bg: #fef3c7;
-  --mte-btn-active-color: #92400e;
+  --mte-btn-active-bg: #dbeafe;
+  --mte-btn-active-color: #111827;
 }
+```
+
+You can also pass them inline via the `style` prop:
+
+```tsx
+<MagicTextEditor
+  style={{ '--mte-bg': '#1f2937', '--mte-color': '#f1f5f9' } as React.CSSProperties}
+/>
 ```
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `--mte-border-color` | `#e2e8f0` | Border color of the root wrapper |
-| `--mte-radius` | `8px` | Border radius |
-| `--mte-bg` | `#ffffff` | Editor background |
-| `--mte-color` | `#0f172a` | Default text color |
-| `--mte-toolbar-bg` | `#f8fafc` | Toolbar background |
-| `--mte-toolbar-border` | `#e2e8f0` | Toolbar bottom border |
-| `--mte-btn-color` | `#475569` | Toolbar button color |
-| `--mte-btn-hover-bg` | `#e2e8f0` | Toolbar button hover background |
-| `--mte-btn-active-bg` | `#dbeafe` | Active toolbar button background |
-| `--mte-btn-active-color` | `#1d4ed8` | Active toolbar button color |
-| `--mte-caret-color` | `#2563eb` | Cursor color |
-| `--mte-selection-bg` | `#bfdbfe` | Text selection background |
-| `--mte-placeholder-color` | `#94a3b8` | Placeholder text color |
-| `--mte-link-color` | `#2563eb` | Link text color |
-| `--mte-link-bg` | `#dbeafe` | Link chip background |
-| `--mte-link-bg-hover` | `#bfdbfe` | Link chip hover background |
-| `--mte-var-chip-bg` | `#fffbda` | Variable chip background (unfilled) |
-| `--mte-var-chip-color` | `#6d6d6c` | Variable chip text color (unfilled) |
-| `--mte-var-chip-border` | `#01e1ff` | Variable chip border color |
-| `--mte-var-filled-bg` | `#fef3c7` | Variable chip background (filled) |
-| `--mte-var-filled-color` | `#92400e` | Variable chip text color (filled) |
+| `--mte-border-color` | `#d1d5db` | Border color of the root wrapper |
+| `--mte-radius` | `6px` | Border radius |
+| `--mte-bg` | `transparent` | Editor background |
+| `--mte-color` | `#111827` | Default text color |
+| `--mte-toolbar-bg` | `transparent` | Toolbar background |
+| `--mte-toolbar-border` | `#d1d5db` | Toolbar bottom border |
+| `--mte-btn-color` | `#6b7280` | Toolbar button base color (also the default for `--mte-icon-color`) |
+| `--mte-icon-color` | `var(--mte-btn-color)` | Icon and label color for toolbar buttons |
+| `--mte-btn-hover-bg` | `#f3f4f6` | Toolbar button hover background |
+| `--mte-btn-active-bg` | `#e5e7eb` | Active toolbar button background |
+| `--mte-btn-active-color` | `#111827` | Active toolbar button text color |
+| `--mte-caret-color` | `#3b82f6` | Cursor color |
+| `--mte-selection-bg` | `#dbeafe` | Text selection background |
+| `--mte-placeholder-color` | `#9ca3af` | Placeholder text color |
+| `--mte-var-chip-bg` | `#f3f4f6` | Variable chip background (unfilled) |
+| `--mte-var-chip-color` | `#374151` | Variable chip text color (unfilled) |
+| `--mte-var-chip-border` | `#9ca3af` | Variable chip border color |
+| `--mte-var-filled-bg` | `#f0fdf4` | Variable chip background (filled) |
+| `--mte-var-filled-color` | `#166534` | Variable chip text color (filled) |
+| `--mte-dropdown-bg` | `#ffffff` | Dropdown / popover background |
+| `--mte-dropdown-border` | `#e5e7eb` | Dropdown border color |
+| `--mte-dropdown-shadow` | `0 2px 8px rgba(0,0,0,0.08)` | Dropdown box shadow |
+| `--mte-dropdown-add-btn-bg` | `#3b82f6` | "Add" button background in dropdowns |
+
+### Light / dark mode
+
+Override tokens on your wrapper element (or via the `style` prop) to support dark mode:
+
+```css
+@media (prefers-color-scheme: dark) {
+  .magic-text-editor {
+    --mte-bg: #1f2937;
+    --mte-color: #f1f5f9;
+    --mte-toolbar-bg: #111827;
+    --mte-border-color: #4b5563;
+    --mte-icon-color: #cbd5e1;
+    --mte-btn-hover-bg: #374151;
+    --mte-dropdown-bg: #1f2937;
+    --mte-dropdown-border: #4b5563;
+  }
+}
+```
 
 ## Development
 

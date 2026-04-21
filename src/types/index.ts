@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import type { JSONContent } from '@tiptap/core'
 import type { Translations, PartialTranslations } from '../i18n/types'
 
@@ -15,6 +16,19 @@ export interface Variable {
 }
 
 /**
+ * Payload passed to the onTTSPlay callback when the Play button is pressed.
+ */
+export interface TTSPlayPayload {
+  /** Plain text content of the current selection. */
+  text: string
+  characterId: string
+  characterName: string
+  voice: string | null
+  inflection: string | null
+  color: string
+}
+
+/**
  * Configuration for a single TTS mark preset shown in the voice-assignment popover.
  */
 export interface TTSMark {
@@ -24,8 +38,6 @@ export interface TTSMark {
   name: string
   /** Available voice/model options for this mark. Rendered as a select in the popover. */
   voices?: string[]
-  /** Hex color for the editor highlight. Auto-assigned from a built-in palette if omitted. */
-  color?: string
 }
 
 export interface MagicTextEditorProps {
@@ -47,6 +59,8 @@ export interface MagicTextEditorProps {
   editable?: boolean
   /** Autofocus the editor on mount. @default false */
   autofocus?: boolean | 'start' | 'end' | 'all' | number
+  /** Inline styles for the root wrapper (useful for overriding CSS custom properties). */
+  style?: CSSProperties
   /** Extra class name for the root wrapper. */
   className?: string
   /** Extra class name for the toolbar. */
@@ -68,6 +82,16 @@ export interface MagicTextEditorProps {
    * Omit to hide the inflection field.
    */
   ttsInflections?: string[]
+  /**
+   * Called when the user clicks the Play button in the TTS popover.
+   * Receives the current selection text and mark assignment so the consumer
+   * can trigger speech synthesis or any custom audio playback.
+   */
+  onTTSPlay?: (payload: TTSPlayPayload) => void
+  /** Called when the user clicks Stop while audio is playing. */
+  onTTSStop?: () => void
+  /** Whether TTS audio is currently playing. Controls the Play/Stop toggle in the popover. */
+  ttsPlaying?: boolean
   /**
    * BCP 47 locale string for the editor UI (e.g. 'en', 'es').
    * Built-in locales: 'en' (default), 'es'.

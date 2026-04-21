@@ -26,6 +26,7 @@ export function MagicTextEditor({
   placeholder = 'Write something...',
   editable = true,
   autofocus = false,
+  style,
   className,
   toolbarClassName,
   contentClassName,
@@ -33,6 +34,9 @@ export function MagicTextEditor({
   onVariableAdd,
   ttsMarks,
   ttsInflections,
+  onTTSPlay,
+  onTTSStop,
+  ttsPlaying,
   locale,
   translations: translationOverrides,
 }: MagicTextEditorProps) {
@@ -102,7 +106,7 @@ export function MagicTextEditor({
 
   return (
     <TranslationsContext.Provider value={t}>
-      <div className={`magic-text-editor${className ? ` ${className}` : ''}`}>
+      <div className={`magic-text-editor${className ? ` ${className}` : ''}`} style={style}>
         {editable && (
           <Toolbar
             editor={editor}
@@ -111,6 +115,9 @@ export function MagicTextEditor({
             onVariableAdd={onVariableAdd}
             ttsMarks={ttsMarks}
             ttsInflections={ttsInflections}
+            onTTSPlay={onTTSPlay}
+            onTTSStop={onTTSStop}
+            ttsPlaying={ttsPlaying}
           />
         )}
         <EditorContent

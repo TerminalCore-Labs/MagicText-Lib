@@ -156,7 +156,7 @@ describe('MagicTextEditor', () => {
 
   it('accepts ttsMarks with voices and color without throwing', () => {
     const characters: TTSMark[] = [
-      { id: 'alice', name: 'Alice', voices: ['en-us-female-1', 'en-us-female-3'], color: '#10b981' },
+      { id: 'alice', name: 'Alice', voices: ['en-us-female-1', 'en-us-female-3'] },
     ]
     expect(() => render(<MagicTextEditor ttsMarks={characters} />)).not.toThrow()
   })
